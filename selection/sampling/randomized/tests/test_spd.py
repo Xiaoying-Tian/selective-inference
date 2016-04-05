@@ -6,7 +6,7 @@ from selection.algorithms.randomized import logistic_instance
 import selection.sampling.randomized.api as randomized
 from pvalues import pval
 
-def main(rho=0.245, n=100, p=30):
+def test_spd(rho=0.245, n=100, p=30):
     
     X, prec, nonzero = instance(n=n, p=p, alpha=0.99, rho=rho)
     lam_frac = 0.1
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     P0, PA = [], []
     for i in range(100):
         print "iteration", i
-        p0, pA = main()
+        p0, pA = test_spd()
         P0.extend(p0); PA.extend(pA)
 
     print "done! mean: ", np.mean(P0), "std: ", np.std(P0)
