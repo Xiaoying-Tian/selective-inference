@@ -21,8 +21,8 @@
 */*.pyc
 */*/*.pyc
 *.pyc
-selection/*.so
-selection/*.c
+selection/*/*.so
+selection/*/*.c
 build
 *ipynb_checkpoints
 */*ipynb_checkpoints
