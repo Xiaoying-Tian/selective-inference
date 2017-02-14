@@ -1,6 +1,7 @@
 import numpy as np, pandas as pd
 from selection.constraints.affine import constraints, stack
-from selection.tests.instance import gaussian_instance
+#from selection.tests.instance import gaussian_instance
+from scipy.stats import norm
 
 def marginal_screening(X, Y, sigma, thresh=3):
 
@@ -55,18 +56,27 @@ def marginal_screening(X, Y, sigma, thresh=3):
         above_thresh_set = np.nonzero(above_thresh)[0]
         for j, v in enumerate(above_thresh_set):
             pvalues.append(con.pivot(X_Ei[j], Y, alternative='twosided'))
-            intervals.append(con.interval(X_Ei[j], Y))
+            #intervals.append(con.interval(X_Ei[j], Y))
 
-        intervals = np.array(intervals)
+        #intervals = np.array(intervals)
 
-        df = pd.DataFrame({'pvalue':pvalues,
-                           'lower':intervals[:,0],
-                           'upper':intervals[:,1]},
+        df = pd.DataFrame({'pvalue':pvalues},
+                           #'lower':intervals[:,0],
+                           #'upper':intervals[:,1]},
                            index=above_thresh_set)
         return df
 
 def test():
-
-    X, y, _, _, sigma = gaussian_instance(rho=0., random_signs=False)
-    return marginal_screening(X, y, sigma, thresh=3.5)
+    X, y, beta, sigma = instance(n=2000, p=20000, s=50, snr=0.1, sigma=10.) 
+    bonferroni = norm.ppf(1-0.025/20000)
+    print X.shape, y.shape, beta.shape, np.where(beta)[0], bonferroni
+    return marginal_screening(X, y, sigma, thresh=bonferroni)
                                 
+def instance(n=100, p=200, s=10, snr=0.3, sigma=1.):
+    X = np.random.standard_normal((n,p))
+    beta = np.zeros(p)
+    beta[:s] = snr * sigma
+    y = np.dot(X, beta) + np.random.standard_normal(n) * sigma
+
+    return X, y, beta, sigma
+
