@@ -8,7 +8,7 @@ def marginal_screening(X, Y, sigma, thresh=3):
     n, p = X.shape
 
     diagX = np.sqrt((X**2).sum(0))
-    # A hack, treat Y_norm as constant since it has relatively small variance.
+    # treat Y_norm as a pluf-in estimate as it is consistent pre-selection 
     Y_norm = np.linalg.norm(Y - Y.mean())
     # Z is the correlations, use Pearson's correlation test
     Z = X.T.dot(Y - Y.mean()) / (diagX * Y_norm)
@@ -60,13 +60,15 @@ def marginal_screening(X, Y, sigma, thresh=3):
         above_thresh_set = np.nonzero(above_thresh)[0]
         for j, v in enumerate(above_thresh_set):
             pvalues.append(con.pivot(X_Ei[j], Y, alternative='twosided'))
-            #intervals.append(con.interval(X_Ei[j], Y))
+            intervals.append(con.interval(X_Ei[j], Y))
 
-        #intervals = np.array(intervals)
+        intervals = np.array(intervals)
+        coef = np.dot(X_Ei, Y)
 
-        df = pd.DataFrame({'pvalue':pvalues},
-                           #'lower':intervals[:,0],
-                           #'upper':intervals[:,1]},
+        df = pd.DataFrame({'pvalue':pvalues,
+                           'lower':intervals[:,0],
+                           'upper':intervals[:,1],
+                           'coefs':coef},
                            index=above_thresh_set)
         return df
 
