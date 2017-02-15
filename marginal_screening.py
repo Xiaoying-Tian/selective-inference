@@ -8,7 +8,10 @@ def marginal_screening(X, Y, sigma, thresh=3):
     n, p = X.shape
 
     diagX = np.sqrt((X**2).sum(0))
-    Z = X.T.dot(Y) / (diagX * Y.std())
+    # A hack, treat Y_norm as constant since it has relatively small variance.
+    Y_norm = np.linalg.norm(Y - Y.mean())
+    # Z is the correlations, use Pearson's correlation test
+    Z = X.T.dot(Y - Y.mean()) / (diagX * Y_norm)
     signZ = np.sign(Z)
     above_thresh = np.abs(Z) > thresh
 
@@ -18,7 +21,7 @@ def marginal_screening(X, Y, sigma, thresh=3):
 
     if above_thresh.sum():
 
-        A_above = -X[:,above_thresh].T / (diagX[above_thresh] * Y.std() * signZ[above_thresh])[:,None]
+        A_above = -X[:,above_thresh].T / (diagX[above_thresh] * Y_norm * signZ[above_thresh])[:,None]
         b_above = -np.ones(above_thresh.sum()) * thresh
 
         above_con = constraints(A_above,
@@ -29,8 +32,8 @@ def marginal_screening(X, Y, sigma, thresh=3):
 
     if (~above_thresh).sum():
 
-        A_below = np.vstack([X[:,~above_thresh].T / (diagX[~above_thresh] * Y.std())[:,None],
-                             -X[:,~above_thresh].T / (diagX[~above_thresh] * Y.std())[:,None]])
+        A_below = np.vstack([X[:,~above_thresh].T / (diagX[~above_thresh] * Y_norm)[:,None],
+                             -X[:,~above_thresh].T / (diagX[~above_thresh] * Y_norm)[:,None]])
         b_below = np.ones(2*(~above_thresh).sum()) * thresh
 
         below_con = constraints(A_below,
@@ -67,15 +70,15 @@ def marginal_screening(X, Y, sigma, thresh=3):
         return df
 
 def test():
+    n, p = 2000, 20000
     X, y, _, sigma = instance(n=2000, p=20000, s=50, snr=0.1, sigma=10.) 
-    bonferroni = get_correlation_cutoff(n, 0.05/p) 
+    bonferroni = get_correlation_cutoff(n, 5./p) 
     return marginal_screening(X, y, sigma, thresh=bonferroni)
 
 def get_correlation_cutoff(n, pval):
     # using Student t-distribution to test Pearson's correlation test
     t = -tdist.ppf(pval/2, n-2)
     return t/np.sqrt(n-2+t**2)
-
                                 
 def instance(n=100, p=200, s=10, snr=0.3, sigma=1.):
     X = np.random.standard_normal((n,p))
