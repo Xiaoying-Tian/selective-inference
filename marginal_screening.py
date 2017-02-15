@@ -13,6 +13,7 @@ def marginal_screening(X, Y, sigma, thresh=3):
     # Z is the correlations, use Pearson's correlation test
     Z = X.T.dot(Y - Y.mean()) / (diagX * Y_norm)
     signZ = np.sign(Z)
+    # two sided_test
     above_thresh = np.abs(Z) > thresh
 
     # surviving the threshold
