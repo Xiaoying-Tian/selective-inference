@@ -73,8 +73,9 @@ def marginal_screening(X, Y, sigma, thresh=3):
 def test():
     n, p = 2000, 20000
     X, y, _, sigma = instance(n=2000, p=20000, s=50, snr=0.1, sigma=10.) 
-    bonferroni = get_correlation_cutoff(n, 5./p) 
-    return marginal_screening(X, y, sigma, thresh=bonferroni)
+    suggestive = get_correlation_cutoff(n, 5./p) 
+    bonferroni = get_correlation_cutoff(n, 0.05/p) 
+    return marginal_screening(X, y, sigma, thresh=suggestive)
 
 def get_correlation_cutoff(n, pval):
     # using Student t-distribution to test Pearson's correlation test
